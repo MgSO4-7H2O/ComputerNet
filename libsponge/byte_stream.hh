@@ -2,12 +2,14 @@
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
 #include <string>
+#include <vector>
 
 //! \brief An in-order byte stream.
 
 //! Bytes are written on the "input" side and read from the "output"
 //! side.  The byte stream is finite: the writer can end the input,
 //! and then no more bytes can be written.
+using namespace std;
 class ByteStream {
   private:
     // Your code here -- add private members as necessary.
@@ -17,6 +19,19 @@ class ByteStream {
     // that's a sign that you probably want to keep exploring
     // different approaches.
 
+    
+    // 循环队列
+    vector<char> _buffer;
+    size_t _capacity;  // capacity of the buffer (byte)
+    size_t _front;
+    size_t _rear;
+    size_t _size;
+    
+    // 已输入/输出字节数
+    size_t _written_bytes;
+    size_t _read_bytes;
+
+    bool _input_ended; // 输入是否完成
     bool _error{};  //!< Flag indicating that the stream suffered an error.
 
   public:

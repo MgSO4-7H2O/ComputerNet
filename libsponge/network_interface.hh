@@ -31,6 +31,11 @@
 //! and learns or replies as necessary.
 class NetworkInterface {
   private:
+    // 参数常量
+    static constexpr size_t ARP_CACHE_TTL = 30000;        // ARP缓存30s
+    static constexpr size_t ARP_REQUEST_TIMEOUT = 5000;   // ARP请求超时5s
+    static constexpr int ARP_MAX_RETRIES = 3;             // 最大重试次数
+    
     //! Ethernet (known as hardware, network-access-layer, or link-layer) address of the interface
     EthernetAddress _ethernet_address;
 
@@ -39,6 +44,34 @@ class NetworkInterface {
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
+    
+    // ARP缓存表
+    struct ARPEntry {
+      EthernetAddress mac_addr; // 记录端口IP地址对应的mac地址
+      size_t timestamp;   // 记录老化时间
+    };
+    std::unordered_map<uint32_t, ARPEntry> _arp_cache{};
+
+    // 由于等待ARP回复未能及时发出的数据包
+    struct PendingPacket {
+      InternetDatagram datagram;  // 数据包
+      Address next_hop;   // 下一跳地址
+      size_t timestamp;   // 排队时间
+    };
+    std::unordered_map<uint32_t, std::queue<PendingPacket>> _pending_packets{};
+
+    // 已发送的ARP请求记录，避免重复发送
+    struct ARPRequest {
+      size_t timestamp;   // 发送时间
+      int retry_count{0}; // 重试次数
+      ARPRequest() : timestamp(0), retry_count(0) {}
+      ARPRequest(size_t ts, int retry) 
+        : timestamp(ts), retry_count(retry) {}
+    };
+    std::unordered_map<uint32_t, ARPRequest> _already_requests{};
+
+    size_t _current_time{0};  // 当前时间(ms)
+
 
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
