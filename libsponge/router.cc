@@ -63,7 +63,11 @@ void Router::route_one_datagram(InternetDatagram &dgram) {
         // 构造网络掩码
         uint32_t mask = r._prefix_length == 0 ? 0 : 0xFFFFFFFF << (32 - r._prefix_length);
         // 最长前缀匹配
-        if ((dst & mask) == (r._route_prefix & mask)) {
+        if (r._prefix_length == 0) {
+            // 默认匹配
+            longest = &r;
+        }
+        else if ((dst & mask) == (r._route_prefix & mask)) {
             if (r._prefix_length > longest_prefix) {
                 longest_prefix = r._prefix_length;
                 longest = &r;
