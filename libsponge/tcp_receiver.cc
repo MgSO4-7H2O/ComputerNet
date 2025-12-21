@@ -35,7 +35,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     }
     _reassembler.push_substring(payload, index, hdr.fin);
     // 更新checkpoint
-    _checkpoint = abs_seq + seg.length_in_sequence_space();
+    _checkpoint = _reassembler.stream_out().bytes_written() + 1;
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const { 

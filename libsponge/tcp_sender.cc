@@ -62,7 +62,7 @@ void TCPSender::fill_window() {
 
         // 从来没发送过 FIN 且 输入字节流处于 EOF 且 可存放下 FIN
         bool can_send_fin = !_fin_sent
-                        && _stream.input_ended()
+                        && _stream.eof()
                         && (remaining > 0);
         if (can_send_fin) {
             hdr.fin = true;
